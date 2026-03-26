@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { QUESTIONS, PROFILE_DEFINITIONS } from './data/survey';
 import { SurveyState, ProfileType } from './types';
-import { generateFinalReports, generateFinalImages } from './services/gemini';
+import { generateFinalReports, generateFinalImages } from './services/openai';
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
