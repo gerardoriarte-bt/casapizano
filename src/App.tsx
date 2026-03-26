@@ -344,10 +344,10 @@ const App: React.FC = () => {
         initial="enter"
         animate="center"
         exit="exit"
-        className="max-w-4xl mx-auto py-20 px-6 min-h-[80vh] flex flex-col"
+        className="max-w-4xl mx-auto h-[calc(100vh-96px)] md:h-[calc(100vh-112px)] py-6 px-6 flex flex-col overflow-hidden"
       >
         {/* Progress Bar */}
-        <div className="w-full h-0.5 bg-zinc-900 mb-24 relative overflow-hidden">
+        <div className="w-full h-0.5 bg-zinc-900 mb-6 relative overflow-hidden shrink-0">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
@@ -356,18 +356,24 @@ const App: React.FC = () => {
           />
         </div>
 
-        <div className="flex-1 space-y-16">
-          <motion.div variants={itemVariants} className="text-center space-y-6">
+        <div className="flex-1 flex flex-col justify-between min-h-0">
+          <motion.div variants={itemVariants} className="text-center space-y-3 shrink-0">
+            <img
+              src="/logo-casa-pizano-2 vf.png"
+              alt="Casa Pizano"
+              className="h-7 w-auto mx-auto opacity-90"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
             <span className="text-[10px] uppercase tracking-[0.5em] text-amber-500 font-bold">
               Espacio {state.currentStep} de {QUESTIONS.length}
             </span>
             <h2 className="text-[10px] font-mono text-zinc-600 uppercase tracking-[0.3em]">{question.title}</h2>
-            <h3 className="text-4xl md:text-6xl font-light text-white leading-tight tracking-tighter uppercase max-w-3xl mx-auto">
+            <h3 className="text-2xl md:text-4xl font-light text-white leading-tight tracking-tighter uppercase max-w-3xl mx-auto">
               {question.question}
             </h3>
           </motion.div>
 
-          <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 gap-2 max-w-2xl mx-auto w-full py-4">
             {question.options.map(option => (
               <motion.button
                 key={option.id}
@@ -375,17 +381,17 @@ const App: React.FC = () => {
                 onClick={() => handleOptionSelect(question.id, option.id)}
                 disabled={loading || isAdvancing}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full text-left p-8 border transition-all duration-700 group relative overflow-hidden ${
+                className={`w-full text-left p-4 border transition-all duration-700 group relative overflow-hidden ${
                   selectedOptionId === option.id 
                     ? 'bg-white border-white text-black' 
                     : 'bg-transparent border-zinc-900 text-zinc-500 hover:border-zinc-700 hover:text-white hover:bg-zinc-950'
                 }`}
               >
-                <div className="flex items-center gap-8 relative z-10">
+                <div className="flex items-center gap-5 relative z-10">
                   <span className={`text-[10px] font-mono ${selectedOptionId === option.id ? 'text-black' : 'text-zinc-700'}`}>
                     0{option.id}
                   </span>
-                  <p className="text-xl font-light tracking-tight">{option.text}</p>
+                  <p className="text-sm md:text-base font-light tracking-tight">{option.text}</p>
                 </div>
                 {selectedOptionId === option.id && (
                   <motion.div 
@@ -398,7 +404,7 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          <motion.div variants={itemVariants} className="flex items-center justify-between pt-16 max-w-2xl mx-auto">
+          <motion.div variants={itemVariants} className="flex items-center justify-between pt-4 max-w-2xl mx-auto w-full shrink-0">
             <button
               onClick={prevStep}
               disabled={loading || isAdvancing}
@@ -636,7 +642,7 @@ const App: React.FC = () => {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-zinc-900/20 blur-[120px] rounded-full" />
       </div>
 
-      <header className="relative z-10 p-8 flex justify-between items-center">
+      <header className="relative z-10 p-6 md:p-8 flex justify-between items-center">
         <img 
           src="/logo-casa-pizano-2 vf.png" 
           alt="Casa Pizano" 
@@ -664,8 +670,14 @@ const App: React.FC = () => {
 
       {loading && (
         <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center">
+          <img
+            src="/logo-casa-pizano-2 vf.png"
+            alt="Casa Pizano"
+            className="h-16 w-auto mb-8"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
           <Loader2 className="animate-spin text-amber-500 mb-6" size={64} />
-          <h2 className="text-2xl font-light text-white uppercase tracking-[0.3em]">Orquestando tu Hábitat</h2>
+          <h2 className="text-2xl font-light text-white uppercase tracking-[0.3em]">Diseñando tu nuevo hogar</h2>
           <p className="text-zinc-500 mt-4 font-mono text-xs text-center px-6">
             Estamos generando tu informe personalizado y visualizaciones fotorrealistas...
           </p>
