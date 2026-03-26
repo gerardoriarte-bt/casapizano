@@ -1,0 +1,9 @@
+{
+  "name": "Casa Pizano",
+  "description": "Una experiencia interactiva para descubrir tu perfil de diseño ideal en el contexto de arquitectura de lujo en Bogotá.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "entities": {
+    "SurveyResult": {
+      "title": "Survey Result",
+      "description": "Stores the results of a user's habitat discovery survey.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user who took the survey." },
+        "userName": { "type": "string", "description": "The name provided by the user." },
+        "inhabitants": { "type": "number", "description": "Number of people living in the apartment." },
+        "ages": { "type": "string", "description": "Ages of the inhabitants." },
+        "pets": { "type": "string", "description": "Type and quantity of pets." },
+        "answers": { "type": "object", "description": "The user's answers to the survey questions." },
+        "scores": { "type": "object", "description": "The calculated scores for each profile." },
+        "dominantProfile": { "type": "string", "description": "The profile with the highest score." },
+        "clientReport": { "type": "string", "description": "The aspirational report generated for the client." },
+        "architectReport": { "type": "string", "description": "The technical report generated for the architect." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the survey was completed." }
+      },
+      "required": ["userName", "dominantProfile", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/surveyResults/{resultId}": {
+      "schema": "SurveyResult",
+      "description": "Collection of survey results."
+    }
+  }
+}
