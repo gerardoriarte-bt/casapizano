@@ -1,21 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  ChevronRight, 
   ChevronLeft, 
-  Home, 
-  Users, 
-  Sparkles, 
   Layout, 
-  Camera, 
-  FileText,
   Loader2,
-  CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  Minus,
+  Plus
 } from 'lucide-react';
 import { QUESTIONS, PROFILE_DEFINITIONS } from './data/survey';
-import { SurveyState, ProfileType } from './types';
-import { generateFinalReports, generateFinalImages } from './services/openai';
+import {
+  SurveyState,
+  ProfileType,
+  APARTMENT_SIZE_LABELS,
+  APARTMENT_SIZE_BAND_ORDER,
+} from './types';
+import { generateClientReport } from './services/openai';
+
+/** Colores para gráficos de perfiles (donut + barras). */
+const PROFILE_CHART: Record<
+  ProfileType,
+  { gradient: string; glow: string; hex: string; label: string }
+> = {
+  Social: {
+    gradient: 'bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500',
+    glow: 'shadow-[0_0_24px_rgba(245,158,11,0.5)]',
+    hex: '#f59e0b',
+    label: 'Social',
+  },
+  Sensorial: {
+    gradient: 'bg-gradient-to-r from-teal-300 via-cyan-400 to-emerald-600',
+    glow: 'shadow-[0_0_24px_rgba(45,212,191,0.45)]',
+    hex: '#2dd4bf',
+    label: 'Sensorial',
+  },
+  'Práctico Funcional': {
+    gradient: 'bg-gradient-to-r from-zinc-400 via-slate-400 to-zinc-600',
+    glow: 'shadow-[0_0_20px_rgba(161,161,170,0.4)]',
+    hex: '#a1a1aa',
+    label: 'Práctico',
+  },
+  'Visionario Sofisticado': {
+    gradient: 'bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-600',
+    glow: 'shadow-[0_0_24px_rgba(139,92,246,0.45)]',
+    hex: '#a78bfa',
+    label: 'Visionario',
+  },
+};
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
@@ -23,6 +54,8 @@ import ReactMarkdown from 'react-markdown';
 const App: React.FC = () => {
   const [state, setState] = useState<SurveyState>({
     userName: '',
+    alreadyPurchased: null,
+    apartmentSizeBand: null,
     inhabitants: 1,
     ages: '',
     pets: '',
@@ -38,12 +71,12 @@ const App: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [finalImages, setFinalImages] = useState<string[]>([]);
-  const [reports, setReports] = useState<{ clientReport: string; architectReport: string } | null>(null);
+  const [reports, setReports] = useState<{ clientReport: string } | null>(null);
   const [dominantProfile, setDominantProfile] = useState<ProfileType | null>(null);
 
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
+  const [basicFormError, setBasicFormError] = useState<string | null>(null);
 
   const handleStart = () => {
     setDirection(1);
@@ -52,6 +85,15 @@ const App: React.FC = () => {
 
   const handleBasicInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (state.alreadyPurchased === null) {
+      setBasicFormError('Indica si ya compraste el apartamento.');
+      return;
+    }
+    if (state.alreadyPurchased === true && state.apartmentSizeBand === null) {
+      setBasicFormError('Selecciona la superficie aproximada de tu apartamento.');
+      return;
+    }
+    setBasicFormError(null);
     setState(prev => ({ ...prev, currentStep: 1 }));
   };
 
@@ -114,11 +156,6 @@ const App: React.FC = () => {
     }
   };
 
-  const skipStep = () => {
-    setDirection(1);
-    nextStep(state);
-  };
-
   const finishSurvey = async (finalState: SurveyState) => {
     setLoading(true);
     console.log("Finishing survey with state:", finalState);
@@ -131,36 +168,82 @@ const App: React.FC = () => {
       console.log("Dominant profile winner:", winner);
       setDominantProfile(winner);
 
-      // Generate reports and images
-      console.log("Generating reports and images...");
-      const [generatedReports, generatedImages] = await Promise.all([
-        generateFinalReports(finalState, winner),
-        generateFinalImages(finalState, winner)
-      ]);
-      
-      console.log("Generated reports:", generatedReports);
-      console.log("Generated images count:", generatedImages.length);
+      console.log("Generating client manifest...");
+      const generated = await generateClientReport(finalState, winner);
+      console.log("Generated client report");
 
-      setReports(generatedReports);
-      setFinalImages(generatedImages);
+      setReports(generated);
+
+      const answersHuman = QUESTIONS.flatMap((q) => {
+        const optId = finalState.answers[q.id];
+        const opt = q.options.find((o) => o.id === optId);
+        if (!opt) return [];
+        return [
+          {
+            id: q.id,
+            title: q.title,
+            question: q.question,
+            optionId: opt.id,
+            optionText: opt.text,
+          },
+        ];
+      });
+
+      const sheetPayload = {
+        submittedAt: new Date().toISOString(),
+        userName: finalState.userName,
+        alreadyPurchased: finalState.alreadyPurchased === true,
+        apartmentSizeBand: finalState.alreadyPurchased
+          ? finalState.apartmentSizeBand
+          : null,
+        apartmentSizeLabel:
+          finalState.alreadyPurchased && finalState.apartmentSizeBand
+            ? APARTMENT_SIZE_LABELS[finalState.apartmentSizeBand]
+            : null,
+        inhabitants: finalState.inhabitants,
+        ages: finalState.ages,
+        pets: finalState.pets,
+        dominantProfile: winner,
+        scores: finalState.scores,
+        answers: finalState.answers,
+        answersHuman,
+        clientReport: generated.clientReport,
+      };
 
       // Save to Firebase
       try {
         await addDoc(collection(db, 'surveyResults'), {
           userName: finalState.userName,
+          alreadyPurchased: finalState.alreadyPurchased === true,
+          apartmentSizeBand: finalState.alreadyPurchased
+            ? finalState.apartmentSizeBand
+            : null,
           inhabitants: finalState.inhabitants,
           ages: finalState.ages,
           pets: finalState.pets,
           answers: finalState.answers,
           scores: finalState.scores,
           dominantProfile: winner,
-          clientReport: generatedReports.clientReport,
-          architectReport: generatedReports.architectReport,
+          clientReport: generated.clientReport,
           createdAt: serverTimestamp()
         });
         console.log("Saved to Firebase successfully");
       } catch (fbError) {
         console.error("Error saving to Firebase:", fbError);
+      }
+
+      try {
+        const exportRes = await fetch('/api/survey-export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(sheetPayload),
+        });
+        const exportJson = await exportRes.json().catch(() => ({}));
+        if (!exportRes.ok) {
+          console.warn('survey-export:', exportRes.status, exportJson);
+        }
+      } catch (sheetErr) {
+        console.warn('survey-export request failed:', sheetErr);
       }
 
       setState(prev => ({ ...prev, isCompleted: true }));
@@ -238,29 +321,180 @@ const App: React.FC = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-          <div className="space-y-4">
-            <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">Inquilinos</label>
-            <input 
-              required
-              type="number" 
-              min="1"
-              value={state.inhabitants}
-              onChange={e => setState(prev => ({ ...prev, inhabitants: parseInt(e.target.value) }))}
-              className="w-full bg-transparent border-b border-zinc-800 py-6 text-3xl md:text-4xl font-light text-white focus:outline-none focus:border-amber-500 transition-all"
-            />
+        <div className="space-y-6 rounded-sm border border-zinc-800/80 bg-zinc-950/40 p-8 md:p-10">
+          <div className="space-y-2">
+            <span className="text-[10px] uppercase tracking-[0.3em] text-amber-500/90 font-bold">
+              Estado de la compra
+            </span>
+            <h3 className="text-2xl md:text-3xl font-light text-white tracking-tight">
+              ¿Ya compraste el apartamento?
+            </h3>
+            <p className="text-sm md:text-base text-zinc-500 font-light leading-relaxed max-w-2xl">
+              Si ya es tuyo, indica también el tamaño aproximado en metros cuadrados para afinar la propuesta.
+            </p>
           </div>
-          <div className="space-y-4">
-            <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">Edades</label>
-            <input 
-              required
-              type="text" 
-              value={state.ages}
-              onChange={e => setState(prev => ({ ...prev, ages: e.target.value }))}
-              className="w-full bg-transparent border-b border-zinc-800 py-6 text-3xl md:text-4xl font-light text-white focus:outline-none focus:border-amber-500 transition-all placeholder:text-zinc-900"
-              placeholder="Ej: 35, 32, 5"
-            />
+          <div
+            className="flex flex-col sm:flex-row gap-3"
+            role="group"
+            aria-label="¿Ya compraste el apartamento?"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setBasicFormError(null);
+                setState((prev) => ({
+                  ...prev,
+                  alreadyPurchased: true,
+                }));
+              }}
+              className={`flex-1 text-left px-5 py-4 border transition-all duration-500 rounded-sm ${
+                state.alreadyPurchased === true
+                  ? 'border-amber-500/80 bg-amber-500/10 text-white'
+                  : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+              }`}
+            >
+              <span className="text-[10px] font-mono text-amber-600/90 block mb-1">A</span>
+              <span className="text-sm font-light tracking-tight">Sí, ya compré</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setBasicFormError(null);
+                setState((prev) => ({
+                  ...prev,
+                  alreadyPurchased: false,
+                  apartmentSizeBand: null,
+                }));
+              }}
+              className={`flex-1 text-left px-5 py-4 border transition-all duration-500 rounded-sm ${
+                state.alreadyPurchased === false
+                  ? 'border-amber-500/80 bg-amber-500/10 text-white'
+                  : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+              }`}
+            >
+              <span className="text-[10px] font-mono text-amber-600/90 block mb-1">B</span>
+              <span className="text-sm font-light tracking-tight">Aún no he comprado</span>
+            </button>
           </div>
+
+          {state.alreadyPurchased === true ? (
+            <div className="space-y-3 pt-2 border-t border-zinc-800/60">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">
+                Superficie aproximada
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {APARTMENT_SIZE_BAND_ORDER.map((band) => (
+                  <button
+                    key={band}
+                    type="button"
+                    onClick={() => {
+                      setBasicFormError(null);
+                      setState((prev) => ({ ...prev, apartmentSizeBand: band }));
+                    }}
+                    className={`text-left px-4 py-3 border text-sm font-light tracking-tight transition-all rounded-sm ${
+                      state.apartmentSizeBand === band
+                        ? 'border-amber-500/80 bg-white text-black'
+                        : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white'
+                    }`}
+                  >
+                    {APARTMENT_SIZE_LABELS[band]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="space-y-6 rounded-sm border border-zinc-800/80 bg-zinc-950/40 p-8 md:p-10">
+          <div className="space-y-2">
+            <span className="text-[10px] uppercase tracking-[0.3em] text-amber-500/90 font-bold">
+              Ocupación del apartamento
+            </span>
+            <h3 className="text-2xl md:text-3xl font-light text-white tracking-tight">
+              ¿Cuántas personas vivirán aquí?
+            </h3>
+            <p className="text-sm md:text-base text-zinc-500 font-light leading-relaxed max-w-2xl">
+              Cuenta a todas las que habitarán el apartamento de forma habitual — adultos, niños y bebés. No incluyas visitas ocasionales.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
+            <div className="flex items-stretch gap-0 border border-zinc-800 rounded-sm overflow-hidden bg-zinc-900/30">
+              <button
+                type="button"
+                aria-label="Una persona menos"
+                disabled={state.inhabitants <= 1}
+                onClick={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    inhabitants: Math.max(1, prev.inhabitants - 1),
+                  }))
+                }
+                className="px-5 py-5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors disabled:opacity-25 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-inset"
+              >
+                <Minus size={22} strokeWidth={1.5} aria-hidden />
+              </button>
+              <label className="sr-only" htmlFor="survey-inhabitants">
+                Número de personas que vivirán en el apartamento
+              </label>
+              <input
+                id="survey-inhabitants"
+                required
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={20}
+                value={state.inhabitants}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const n = parseInt(raw, 10);
+                  if (raw === '') return;
+                  if (Number.isNaN(n)) return;
+                  setState((prev) => ({
+                    ...prev,
+                    inhabitants: Math.min(20, Math.max(1, n)),
+                  }));
+                }}
+                className="w-[5.5rem] sm:w-24 bg-transparent py-5 text-center text-3xl md:text-4xl font-light text-white focus:outline-none focus-visible:bg-zinc-900/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <button
+                type="button"
+                aria-label="Una persona más"
+                disabled={state.inhabitants >= 20}
+                onClick={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    inhabitants: Math.min(20, prev.inhabitants + 1),
+                  }))
+                }
+                className="px-5 py-5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors disabled:opacity-25 disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-inset"
+              >
+                <Plus size={22} strokeWidth={1.5} aria-hidden />
+              </button>
+            </div>
+            <p
+              className="text-lg md:text-xl text-zinc-300 font-light leading-snug"
+              aria-live="polite"
+            >
+              {state.inhabitants === 1
+                ? 'Vivirá 1 persona en el apartamento.'
+                : `Vivirán ${state.inhabitants} personas en el apartamento.`}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">Edades</label>
+          <p className="text-sm text-zinc-600 font-light -mt-1">
+            Una edad por cada persona (puedes separarlas con comas).
+          </p>
+          <input 
+            required
+            type="text" 
+            value={state.ages}
+            onChange={e => setState(prev => ({ ...prev, ages: e.target.value }))}
+            className="w-full bg-transparent border-b border-zinc-800 py-6 text-3xl md:text-4xl font-light text-white focus:outline-none focus:border-amber-500 transition-all placeholder:text-zinc-900"
+            placeholder="Ej: 35, 32, 5"
+          />
         </div>
 
         <div className="space-y-4">
@@ -273,6 +507,12 @@ const App: React.FC = () => {
             placeholder="Ej: 2 perros labradores"
           />
         </div>
+
+        {basicFormError ? (
+          <p className="text-sm text-amber-500/90 font-light" role="alert">
+            {basicFormError}
+          </p>
+        ) : null}
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-12">
           <button 
@@ -404,7 +644,7 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          <motion.div variants={itemVariants} className="flex items-center justify-between pt-4 max-w-2xl mx-auto w-full shrink-0">
+          <motion.div variants={itemVariants} className="flex items-center justify-start pt-4 max-w-2xl mx-auto w-full shrink-0">
             <button
               onClick={prevStep}
               disabled={loading || isAdvancing}
@@ -412,15 +652,6 @@ const App: React.FC = () => {
             >
               <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
               Anterior
-            </button>
-            
-            <button
-              onClick={skipStep}
-              disabled={loading || isAdvancing}
-              className="flex items-center gap-4 text-zinc-600 uppercase tracking-[0.3em] text-[10px] font-bold hover:text-white transition-all group disabled:opacity-10"
-            >
-              Omitir
-              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </motion.div>
         </div>
@@ -442,6 +673,21 @@ const App: React.FC = () => {
       );
     }
     const profileDef = PROFILE_DEFINITIONS[dominantProfile];
+    const profileOrder: ProfileType[] = [
+      'Social',
+      'Sensorial',
+      'Práctico Funcional',
+      'Visionario Sofisticado',
+    ];
+    const totalProfilePoints = Math.max(
+      1,
+      profileOrder.reduce((acc, k) => acc + (state.scores[k] ?? 0), 0)
+    );
+    const preferenceRows = QUESTIONS.flatMap((q) => {
+      const optId = state.answers[q.id];
+      const opt = q.options.find((o) => o.id === optId);
+      return opt ? [{ q, opt }] : [];
+    });
 
     return (
       <motion.div 
@@ -451,28 +697,11 @@ const App: React.FC = () => {
         exit={{ opacity: 0 }}
         className="bg-black text-zinc-300"
       >
-        {/* Landing Page Hero */}
-        <section className="relative h-screen flex items-center justify-center overflow-hidden">
-          {finalImages && finalImages.length > 0 ? (
-            <motion.div 
-              initial={{ scale: 1.1, opacity: 0 }}
-              animate={{ scale: 1, opacity: 0.4 }}
-              transition={{ duration: 2 }}
-              className="absolute inset-0"
-            >
-              <img 
-                src={finalImages[0]} 
-                alt="Hero" 
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/20 to-black" />
-            </motion.div>
-          ) : (
-            <div className="absolute inset-0 bg-zinc-900/20" />
-          )}
+        <section className="relative shrink-0 flex items-center justify-center overflow-hidden px-6 py-16 min-h-[42vh] md:min-h-0 md:py-7 md:pb-5">
+          <div className="absolute inset-0 bg-zinc-950/80" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.08),transparent_55%)]" />
           
-          <div className="relative z-10 text-center px-6 max-w-5xl mx-auto space-y-8">
+          <div className="relative z-10 text-center max-w-5xl mx-auto space-y-8 md:space-y-5">
             <motion.span 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -484,7 +713,7 @@ const App: React.FC = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-7xl md:text-9xl font-light text-white tracking-tighter uppercase leading-none"
+              className="text-5xl md:text-6xl lg:text-7xl font-light text-white tracking-tighter uppercase leading-none"
             >
               {profileDef.title}
             </motion.h2>
@@ -492,111 +721,255 @@ const App: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-xl md:text-3xl text-zinc-400 font-light italic max-w-3xl mx-auto leading-relaxed"
+              className="text-lg md:text-2xl text-zinc-400 font-light italic max-w-3xl mx-auto leading-relaxed"
             >
               "{profileDef.description}"
             </motion.p>
           </div>
-          
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
-          >
-            <span className="text-[10px] uppercase tracking-widest text-zinc-500">Explorar Informe</span>
-            <div className="w-px h-12 bg-linear-to-b from-amber-500 to-transparent" />
-          </motion.div>
         </section>
 
-        {/* Narrative Section */}
-        <section className="py-32 px-6 max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-16 items-start">
-            <div className="sticky top-32 space-y-4">
-              <span className="text-xs uppercase tracking-widest text-amber-500 font-bold">La Esencia</span>
-              <h3 className="text-3xl font-light text-white leading-tight">Tu Manifiesto de Diseño</h3>
-              <div className="h-px bg-zinc-800 w-12" />
-            </div>
-            <div className="prose prose-invert prose-amber prose-lg max-w-none font-light leading-relaxed text-zinc-400">
-              {reports.clientReport ? (
-                <ReactMarkdown>{reports.clientReport}</ReactMarkdown>
-              ) : (
-                <p>Generando narrativa personalizada...</p>
-              )}
+        {/* Manifiesto encima del resumen de preferencias (ancho máx. 690px) */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="relative z-10 px-0 pt-2 pb-5 md:pt-0 md:pb-5"
+        >
+          <div className="mx-auto w-full max-w-[690px]">
+            <div className="grid grid-cols-1 gap-[29px] items-start min-w-0">
+              <div className="space-y-3 min-w-0">
+                <span className="inline-block w-[134px] text-xs uppercase tracking-widest text-amber-500 font-bold">
+                  Manifiesto
+                </span>
+                <h3 className="text-2xl md:text-3xl font-light text-white leading-snug">
+                  El apartamento que sueñas habitado
+                </h3>
+                <div className="h-px bg-gradient-to-r from-amber-500/60 to-transparent w-14" />
+                <p className="text-xs text-zinc-600 font-light leading-relaxed hidden md:block">
+                  Redactado a partir de tus respuestas y de quienes comparten el hogar contigo.
+                </p>
+              </div>
+              <div className="prose prose-invert prose-amber prose-lg max-w-none font-light leading-[1.75] text-zinc-300 [&_h2]:text-white [&_h2]:font-light [&_h2]:tracking-tight [&_h2]:text-xl [&_h2]:md:text-2xl [&_h2]:mt-0 [&_h2]:mb-5 [&_p]:mb-4">
+                {reports.clientReport ? (
+                  <ReactMarkdown>{reports.clientReport}</ReactMarkdown>
+                ) : (
+                  <p className="text-zinc-500">Generando narrativa personalizada...</p>
+                )}
+              </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        {/* Gallery Section */}
-        <section className="py-32 bg-zinc-950">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="mb-16 flex justify-between items-end">
-              <div className="space-y-4">
-                <span className="text-xs uppercase tracking-widest text-amber-500 font-bold">Visualización</span>
-                <h3 className="text-5xl font-light text-white tracking-tighter uppercase">Atmósferas Proyectadas</h3>
+        <section className="px-6 pb-10 md:pb-3 relative z-10 md:mt-0">
+          <div className="max-w-4xl mx-auto w-full rounded-sm border border-zinc-800/90 bg-zinc-950/60 backdrop-blur-sm overflow-hidden flex flex-col shadow-[0_0_0_1px_rgba(39,39,42,0.5)]">
+            <div className="flex items-center gap-3 px-5 py-3 md:py-3.5 border-b border-zinc-800/80 bg-zinc-900/40 shrink-0">
+              <Layout className="text-amber-500 shrink-0" size={20} strokeWidth={1.5} aria-hidden />
+              <div>
+                <h3 className="text-[10px] uppercase tracking-[0.35em] text-zinc-500 font-bold">
+                  Resumen de preferencias
+                </h3>
+                <p className="text-sm text-zinc-400 font-light mt-0.5 md:text-xs md:leading-snug">
+                  Vista rápida de tus elecciones. En pantalla grande el listado se desplaza dentro del marco.
+                </p>
               </div>
-              <p className="text-zinc-500 text-sm max-w-xs text-right hidden md:block italic">
-                Renders fotorrealistas basados en tus preferencias de materiales, luz y espacialidad.
-              </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              <div className="md:col-span-8 aspect-video overflow-hidden border border-zinc-800 group">
-                <img 
-                  src={(finalImages && finalImages[1]) || (finalImages && finalImages[0]) || "https://picsum.photos/seed/arch1/1200/800"} 
-                  alt="Gallery 1" 
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <div className="md:col-span-4 aspect-4/5 overflow-hidden border border-zinc-800 group">
-                <img 
-                  src={(finalImages && finalImages[2]) || (finalImages && finalImages[0]) || "https://picsum.photos/seed/arch2/800/1000"} 
-                  alt="Gallery 2" 
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <div className="md:col-span-4 aspect-square overflow-hidden border border-zinc-800 group">
-                <img 
-                  src={(finalImages && finalImages[0]) || "https://picsum.photos/seed/arch3/800/800"} 
-                  alt="Gallery 3" 
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <div className="md:col-span-8 aspect-video overflow-hidden border border-zinc-800 group">
-                <div className="w-full h-full bg-zinc-900 flex items-center justify-center p-12 text-center">
-                  <div className="space-y-6">
-                    <Sparkles className="mx-auto text-amber-500 opacity-50" size={40} />
-                    <p className="text-xl font-light text-zinc-400 italic">
-                      "Cada detalle ha sido orquestado para resonar con tu visión única del hábitat."
-                    </p>
+
+            <div className="p-5 md:p-5 md:pt-4 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-6 md:items-stretch md:flex-1 md:min-h-0 md:overflow-hidden">
+              <div className="md:col-span-5 space-y-5 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden md:pr-2 md:max-h-full
+                [scrollbar-width:thin]
+                [scrollbar-color:rgba(82,82,91,0.9)_rgb(9,9,11)]
+                [&::-webkit-scrollbar]:w-1.5
+                [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950
+                [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-600">
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 font-bold">Contexto</p>
+                  <ul className="text-sm text-zinc-300 font-light space-y-1.5">
+                    <li><span className="text-zinc-500">Nombre</span> — {state.userName || '—'}</li>
+                    <li>
+                      <span className="text-zinc-500">Compra</span> —{' '}
+                      {state.alreadyPurchased === true
+                        ? 'Ya compró'
+                        : state.alreadyPurchased === false
+                          ? 'Aún no compra'
+                          : '—'}
+                      {state.alreadyPurchased === true && state.apartmentSizeBand ? (
+                        <span className="text-zinc-400">
+                          {' '}
+                          · {APARTMENT_SIZE_LABELS[state.apartmentSizeBand]}
+                        </span>
+                      ) : null}
+                    </li>
+                    <li>
+                      <span className="text-zinc-500">Hogar</span> —{' '}
+                      {state.inhabitants === 1
+                        ? '1 persona'
+                        : `${state.inhabitants} personas`}
+                      {state.ages ? ` · ${state.ages}` : ''}
+                    </li>
+                    {state.pets ? (
+                      <li><span className="text-zinc-500">Mascotas</span> — {state.pets}</li>
+                    ) : null}
+                  </ul>
+                </div>
+
+                <div className="space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                    <motion.div
+                      initial={{ scale: 0.85, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+                      className="relative mx-auto sm:mx-0 shrink-0"
+                    >
+                      {(() => {
+                        let angle = 0;
+                        const stops: string[] = [];
+                        profileOrder.forEach((key) => {
+                          const val = state.scores[key] ?? 0;
+                          if (val <= 0) return;
+                          const span = (val / totalProfilePoints) * 360;
+                          const end = angle + span;
+                          stops.push(`${PROFILE_CHART[key].hex} ${angle}deg ${end}deg`);
+                          angle = end;
+                        });
+                        const cone =
+                          stops.length > 0
+                            ? `conic-gradient(${stops.join(', ')})`
+                            : 'conic-gradient(#3f3f46 0deg 360deg)';
+                        const domVal = state.scores[dominantProfile] ?? 0;
+                        const dominantPct = Math.round((domVal / totalProfilePoints) * 100);
+                        return (
+                          <div className="relative h-[7.5rem] w-[7.5rem] shrink-0">
+                            <div
+                              className="absolute inset-0 rounded-full ring-2 ring-zinc-700/90 ring-offset-4 ring-offset-zinc-950 shadow-[0_0_48px_rgba(245,158,11,0.14)]"
+                              style={{ background: cone }}
+                              aria-hidden
+                            />
+                            <div className="absolute inset-[17%] flex flex-col items-center justify-center rounded-full bg-zinc-950 border border-zinc-800/80 shadow-[inset_0_2px_16px_rgba(0,0,0,0.55)]">
+                              <span className="text-2xl font-light tabular-nums text-white leading-none">
+                                {dominantPct}%
+                              </span>
+                              <span className="text-[9px] uppercase tracking-[0.2em] text-amber-500 font-bold mt-1 text-center px-1 leading-tight">
+                                {PROFILE_CHART[dominantProfile].label}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </motion.div>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">
+                        Composición de tu perfil
+                      </p>
+                      <p className="text-xs text-zinc-500 font-light leading-relaxed">
+                        Cada color es un matiz de cómo habitas el espacio. El anillo resume la mezcla; las barras, el detalle.
+                      </p>
+                      <ul className="flex flex-wrap gap-x-4 gap-y-1.5 pt-1">
+                        {profileOrder.map((key) => (
+                          <li key={key} className="flex items-center gap-2 text-[11px] text-zinc-400">
+                            <span
+                              className="h-2 w-2 rounded-full shrink-0 ring-1 ring-white/20"
+                              style={{ backgroundColor: PROFILE_CHART[key].hex }}
+                            />
+                            <span className="font-medium text-zinc-300">{PROFILE_CHART[key].label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
+
+                  <ul className="space-y-4">
+                    {profileOrder.map((key, index) => {
+                      const val = state.scores[key] ?? 0;
+                      const pct = Math.round((val / totalProfilePoints) * 100);
+                      const isTop = key === dominantProfile;
+                      const chart = PROFILE_CHART[key];
+                      return (
+                        <motion.li
+                          key={key}
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.06 * index, duration: 0.45 }}
+                        >
+                          <div className="flex justify-between items-baseline gap-3 text-xs mb-2">
+                            <span
+                              className={`font-medium tracking-tight ${
+                                isTop ? 'text-white' : 'text-zinc-400'
+                              }`}
+                            >
+                              {PROFILE_DEFINITIONS[key]?.title ?? key}
+                            </span>
+                            <span
+                              className={`tabular-nums shrink-0 ${
+                                isTop ? 'text-amber-400' : 'text-zinc-500'
+                              }`}
+                            >
+                              <span className="text-lg font-light">{pct}</span>
+                              <span className="text-zinc-600 text-[10px] ml-1">% · {val} pts</span>
+                            </span>
+                          </div>
+                          <div className="h-3 rounded-full bg-zinc-800/90 overflow-hidden ring-1 ring-zinc-700/50">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pct}%` }}
+                              transition={{
+                                duration: 1.15,
+                                delay: 0.08 * index,
+                                ease: [0.16, 1, 0.3, 1],
+                              }}
+                              className={`h-full rounded-full ${chart.gradient} ${
+                                isTop ? chart.glow : 'opacity-[0.92]'
+                              }`}
+                            />
+                          </div>
+                        </motion.li>
+                      );
+                    })}
+                  </ul>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Technical Section */}
-        <section className="py-32 px-6">
-          <div className="max-w-5xl mx-auto bg-white text-black p-12 md:p-24 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <FileText size={120} />
-            </div>
-            <div className="relative z-10 space-y-12">
-              <div className="space-y-4">
-                <span className="text-xs uppercase tracking-widest font-bold text-zinc-500">Documentación</span>
-                <h3 className="text-4xl font-light tracking-tighter uppercase">Informe Técnico Arquitectónico</h3>
-                <div className="w-24 h-1 bg-black" />
-              </div>
-              <div className="prose prose-zinc max-w-none text-sm columns-1 md:columns-2 gap-12">
-                {reports.architectReport ? (
-                  <ReactMarkdown>{reports.architectReport}</ReactMarkdown>
-                ) : (
-                  <p>Preparando especificaciones técnicas...</p>
-                )}
+              <div className="md:col-span-7 flex min-h-[min(22rem,50vh)] flex-col md:min-h-0 md:h-full md:max-h-full">
+                <div className="flex h-full min-h-[min(22rem,50vh)] flex-1 flex-col overflow-hidden rounded-sm border border-zinc-600/70 bg-zinc-900/60 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.04)] md:min-h-0 md:max-h-full">
+                  <div className="shrink-0 border-b border-zinc-700/90 bg-zinc-950/90 px-3 py-2.5 md:px-4">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 font-bold">
+                      Por tema
+                    </p>
+                    <p className="text-[11px] text-zinc-500 font-light mt-1 leading-snug">
+                      Hay más respuestas abajo — desplázate dentro de este panel.
+                    </p>
+                  </div>
+                  <div
+                    className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 py-3 md:px-4 md:py-4 space-y-2.5
+                      [scrollbar-width:thin]
+                      [scrollbar-color:rgba(180,83,9,0.65)_rgb(24,24,27)]
+                      [&::-webkit-scrollbar]:w-2
+                      [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950
+                      [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-600
+                      [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-zinc-800
+                      hover:[&::-webkit-scrollbar-thumb]:bg-amber-700/80"
+                  >
+                    {preferenceRows.map(({ q, opt }) => (
+                      <div
+                        key={q.id}
+                        className="rounded-sm border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5 text-left shadow-sm"
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className="text-[10px] font-mono text-amber-500/95 shrink-0 mt-0.5">
+                            {opt.id}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold">
+                              {q.title}
+                            </p>
+                            <p className="text-xs text-zinc-200/90 font-light leading-snug mt-1">
+                              {opt.text}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -677,7 +1050,7 @@ const App: React.FC = () => {
             style={{ filter: 'brightness(0) invert(1)' }}
           />
           <Loader2 className="animate-spin text-amber-500 mb-6" size={64} />
-          <h2 className="text-2xl font-light text-white uppercase tracking-[0.3em]">Diseñando tu nuevo hogar</h2>
+          <h2 className="text-2xl font-light text-white uppercase tracking-[0.3em]">Generando tu informe</h2>
           <p className="text-zinc-500 mt-4 font-mono text-xs text-center px-6">
             Estamos generando tu informe personalizado y visualizaciones fotorrealistas...
           </p>

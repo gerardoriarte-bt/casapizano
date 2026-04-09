@@ -7,14 +7,15 @@
       "properties": {
         "userId": { "type": "string", "description": "The UID of the user who took the survey." },
         "userName": { "type": "string", "description": "The name provided by the user." },
+        "alreadyPurchased": { "type": "boolean", "description": "Whether the client has already purchased the apartment." },
+        "apartmentSizeBand": { "type": "string", "description": "Approximate size band when purchased: lt_100, 100_200, gt_200, gt_300." },
         "inhabitants": { "type": "number", "description": "Number of people living in the apartment." },
         "ages": { "type": "string", "description": "Ages of the inhabitants." },
         "pets": { "type": "string", "description": "Type and quantity of pets." },
         "answers": { "type": "object", "description": "The user's answers to the survey questions." },
         "scores": { "type": "object", "description": "The calculated scores for each profile." },
         "dominantProfile": { "type": "string", "description": "The profile with the highest score." },
-        "clientReport": { "type": "string", "description": "The aspirational report generated for the client." },
-        "architectReport": { "type": "string", "description": "The technical report generated for the architect." },
+        "clientReport": { "type": "string", "description": "The aspirational manifest generated for the client." },
         "createdAt": { "type": "string", "format": "date-time", "description": "When the survey was completed." }
       },
       "required": ["userName", "dominantProfile", "createdAt"]

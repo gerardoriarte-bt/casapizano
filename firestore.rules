@@ -11,14 +11,15 @@ service cloud.firestore {
     // Fields:
     //   - userId: string (optional) - The UID of the user
     //   - userName: string (required) - The name provided by the user
+    //   - alreadyPurchased: bool (optional) - Purchased the apartment
+    //   - apartmentSizeBand: string (optional) - lt_100 | 100_200 | gt_200 | gt_300 when purchased
     //   - inhabitants: number (optional) - Number of people
     //   - ages: string (optional) - Ages of inhabitants
     //   - pets: string (optional) - Pets info
     //   - answers: map (optional) - User's answers
     //   - scores: map (optional) - Profile scores
     //   - dominantProfile: string (required) - The winning profile
-    //   - clientReport: string (optional) - Aspirational text
-    //   - architectReport: string (optional) - Technical text
+    //   - clientReport: string (optional) - Aspirational manifest
     //   - createdAt: timestamp (required) - Creation time
     //
     // ===============================================================

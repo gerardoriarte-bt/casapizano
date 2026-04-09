@@ -2,256 +2,340 @@ import { Question } from '../types';
 
 export const QUESTIONS: Question[] = [
   {
-    id: 'cocina',
-    title: 'COCINA PROTAGONISTA VS. DISCRETA',
-    question: 'Cuando invitas gente a tu casa, tú eres…',
+    id: 'hogar',
+    title: 'HOGAR',
+    question: 'Tu casa ideal es ese lugar donde puedes…',
     options: [
       {
         id: 'A',
-        text: 'El que cocina y conversa al mismo tiempo',
+        text: 'Tener siempre gente, moverte entre espacios abiertos y compartir sin límites, aunque eso implique menos privacidad',
         profiles: ['Social', 'Visionario Sofisticado'],
-        reveals: 'Anfitrión activo, disfruta ser protagonista',
-        essentialElement: 'Cocina abierta, isla central, materiales protagonistas, conexión directa con sala/comedor'
+        reveals: 'Vida compartida y fluidez por encima del aislamiento',
+        essentialElement:
+          'Áreas comunes amplias e integradas, cocina abierta, terraza como extensión, circulación fluida',
       },
       {
         id: 'B',
-        text: 'El que acompaña, pero no se mete en la cocina',
-        profiles: ['Social', 'Práctico Funcional'],
-        reveals: 'Sociable, pero no quiere el caos',
-        essentialElement: 'cocina semi-integrada, barras o pasa platos, separaciones sutiles (vidrio, paneles)'
+        text: 'Desconectarte del mundo y tener silencio real, un refugio solo para ti y los tuyos',
+        profiles: ['Sensorial'],
+        reveals: 'Prioridad en calma, contención y privacidad',
+        essentialElement: 'Separación clara entre zonas, control de luz y sonido, espacios contenidos',
       },
       {
         id: 'C',
-        text: 'El que solo aparece cuando está servido',
-        profiles: ['Práctico Funcional'],
-        reveals: 'Delegación, eficiencia, cero protagonismo',
-        essentialElement: 'cocina cerrada o compacta, layout eficiente, poco impacto visual, prioridad en almacenamiento'
-      }
-    ]
+        text: 'Tener espacios integrados para compartir, pero con la posibilidad de cerrarlos y mantener privacidad cuando lo necesites',
+        profiles: ['Práctico Funcional', 'Social'],
+        reveals: 'Equilibrio entre convivencia y zonas cerrables',
+        essentialElement:
+          'Espacios integrados con posibilidad de cierre (puertas corredizas, paneles), zonificación adaptable',
+      },
+    ],
   },
   {
     id: 'orientacion',
-    title: 'ORIENTACIÓN + TIPO DE TEMPERATURA',
-    question: '¿Cómo te gusta sentir tu casa la mayor parte del tiempo?',
+    title: 'ORIENTACIÓN',
+    question: 'En tu rutina diaria, tú eres más…',
     options: [
       {
         id: 'A',
-        text: 'Con luz cálida y temperatura más alta, me gusta cuando entra el sol fuerte y se siente acogedora.',
+        text: 'De los que disfrutan empezar el día temprano, con energía desde la mañana',
         profiles: ['Práctico Funcional', 'Sensorial'],
-        reveals: 'búsqueda de calidez, hogar acogedor, disfrute del cierre del día',
-        essentialElement: 'orientación occidente, sala y terraza protagonistas en la tarde, ventanales amplios, Materiales cálidos (madera)'
+        reveals: 'Ritmo matutino y luz suave al despertar',
+        essentialElement:
+          'Orientación oriente, entrada de luz suave en la mañana, vistas hacia el amanecer',
       },
       {
         id: 'B',
-        text: 'Fresca y luminosa, prefiero cuando entra el sol suave y el ambiente se mantiene más frío.',
-        profiles: ['Práctico Funcional', 'Sensorial'], // Vital mapped to Sensorial/Práctico
-        reveals: 'energía temprana, confort térmico, claridad mental',
-        essentialElement: 'orientación oriente, dormitorios iluminados en la mañana, control solar en fachada occidental, materiales frescos (piedra, tonos claros, lino)'
+        text: 'De los que duermen hasta el mediodía y se activan más en la tarde o noche',
+        profiles: ['Sensorial', 'Práctico Funcional'],
+        reveals: 'Preferencia por la tarde-noche y ambientes más contenidos de día',
+        essentialElement:
+          'Orientación occidente, vistas abiertas a la ciudad, protagonismo de luces nocturnas',
       },
       {
         id: 'C',
-        text: 'Me adapto fácil, no tengo una preferencia clara.',
+        text: 'Flexible, no tienes un momento del día que defina tu rutina',
         profiles: ['Sensorial', 'Visionario Sofisticado'],
-        reveals: 'prioriza distribución y funcionalidad sobre clima',
-        essentialElement: 'aislamiento eficiente, diseño versátil que permita modular luz y temperatura'
-      }
-    ]
+        reveals: 'Adaptabilidad frente a horarios y climas',
+        essentialElement: 'Diseño versátil: cualquier orientación puede funcionar con buen diseño',
+      },
+    ],
+  },
+  {
+    id: 'iluminacion',
+    title: 'ILUMINACIÓN',
+    question: 'En tu día a día, ¿cómo te gusta que se sienta la luz en tu casa?',
+    options: [
+      {
+        id: 'A',
+        text: 'Me gusta que la luz natural sea protagonista, que los espacios cambien con el día y con el sol la mayor parte del tiempo',
+        profiles: ['Sensorial', 'Visionario Sofisticado'],
+        reveals: 'Luz natural como eje de la experiencia del hogar',
+        essentialElement:
+          'Ventanales amplios, orientación estratégica, entrada de luz directa e indirecta',
+      },
+      {
+        id: 'B',
+        text: 'Prefiero controlar la luz, ajustar intensidad y ambiente según el momento, sin depender tanto de la luz natural',
+        profiles: ['Práctico Funcional', 'Visionario Sofisticado'],
+        reveals: 'Control fino del ambiente lumínico',
+        essentialElement:
+          'Iluminación artificial por capas, escenas de luz, control de intensidad',
+      },
+      {
+        id: 'C',
+        text: 'Me adapto a cualquiera: mientras el espacio esté bien iluminado, no tengo una preferencia clara',
+        profiles: ['Sensorial', 'Práctico Funcional'],
+        reveals: 'Flexibilidad entre luz natural y artificial',
+        essentialElement: 'Combinación de luz natural y artificial, soluciones versátiles',
+      },
+    ],
+  },
+  {
+    id: 'cocina',
+    title: 'COCINA',
+    question: 'Cuando invitas gente a tu casa, ¿cómo te gusta que sea tu cocina?',
+    options: [
+      {
+        id: 'A',
+        text: 'Grande y abierta para cocinar y conversar al mismo tiempo',
+        profiles: ['Social', 'Visionario Sofisticado'],
+        reveals: 'Cocina como escenario social',
+        essentialElement:
+          'Cocina abierta, isla central, materiales protagonistas, conexión directa con sala/comedor',
+      },
+      {
+        id: 'B',
+        text: 'Semi-integrada que permita acompañar sin estar completamente dentro',
+        profiles: ['Social', 'Práctico Funcional'],
+        reveals: 'Equilibrio entre convivencia y contención',
+        essentialElement:
+          'Cocina semi-integrada, barras o pasa platos, separaciones sutiles (vidrio, paneles)',
+      },
+      {
+        id: 'C',
+        text: 'Compacta, donde todo funcione sin complicaciones',
+        profiles: ['Práctico Funcional'],
+        reveals: 'Eficiencia y poco protagonismo visual',
+        essentialElement:
+          'Cocina cerrada o compacta, layout eficiente, poco impacto visual, prioridad en almacenamiento',
+      },
+    ],
   },
   {
     id: 'sala',
-    title: 'SALA ABIERTA, HÍBRIDA O TIPO LOUNGE/CINE',
-    question: 'Cuando llegas a tu casa y entras a la sala, lo que más te provoca es…',
+    title: 'SALA',
+    question: 'Cuando llegas a casa, ¿cómo te gusta que funcionen tus espacios sociales?',
     options: [
       {
         id: 'A',
-        text: 'Invitar a amigos, abrir una botella, subir la música y que la conversación se alargue sin mirar la hora.',
-        profiles: ['Social', 'Práctico Funcional'],
-        reveals: 'energía expansiva, gusto por compartir, necesidad de flujo y conexión',
-        essentialElement: 'integración sala–comedor–cocina (concepto abierto), Circulación fluida, sin barreras visuales, terraza conectada o balcón como extensión social. Buena acústica para música'
+        text: 'Que todo esté conectado: sala, comedor y cocina como un solo espacio para compartir sin barreras',
+        profiles: ['Social', 'Visionario Sofisticado'],
+        reveals: 'Integración total de zonas sociales',
+        essentialElement:
+          'Integración total sala–comedor–cocina, circulación continua, conexión directa con terraza o balcón',
       },
       {
         id: 'B',
-        text: 'Tirarte en el sofá con un libro o un café, en silencio, dejando que el día se desarme solo.',
-        profiles: ['Sensorial'],
-        reveals: 'Búsqueda de refugio, intimidad emocional',
-        essentialElement: 'espacios más contenidos y acogedores, ventanas con vista tranquila, aislamiento acústico'
+        text: 'Que esté integrada, pero con la posibilidad de cerrarse cuando necesito privacidad o controlar el ambiente',
+        profiles: ['Social', 'Práctico Funcional'],
+        reveals: 'Integración con opción de aislar',
+        essentialElement:
+          'Puertas corredizas, paneles móviles, posibilidad de aislar sin perder integración',
       },
       {
         id: 'C',
-        text: 'Apagar las luces, prender la pantalla y perderte en una historia hasta que el mundo desaparezca.',
-        profiles: ['Visionario Sofisticado'],
-        reveals: 'Experiencia inmersiva',
-        essentialElement: 'muro protagonista para pantalla grande, previsión de sonido envolvente, distribución cerrable (puertas corredizas si es integrada)'
-      }
-    ]
+        text: 'Que sea independiente, y que la vida social ocurra más hacia la terraza u otros espacios',
+        profiles: ['Sensorial', 'Práctico Funcional'],
+        reveals: 'Sala contenida y vida social hacia el exterior u otras zonas',
+        essentialElement:
+          'Sala definida y separada, terraza como protagonista social, distribución más contenida',
+      },
+    ],
   },
   {
     id: 'comedor',
-    title: 'COMEDOR PROTAGONISTA VS. INTEGRADO',
-    question: 'Cuando te sientas a comer con tu familia o amigos, lo que más esperas es…',
+    title: 'COMEDOR',
+    question: 'En tu día a día, ¿cómo usas realmente el comedor en tu casa?',
     options: [
       {
         id: 'A',
-        text: 'Que la comida se enfríe mientras la conversación se calienta y la sobremesa se alarga sin culpa.',
-        profiles: ['Social', 'Sensorial'],
-        reveals: 'Valora el ritual, valor por el encuentro, la mesa como centro emocional del hogar',
-        essentialElement: 'espacio para mesa grande protagonista (6–8 puestos o más), ubicación central y visible, cercanía directa con cocina, espacio amplio para circulación alrededor'
+        text: 'Lo reservo para momentos especiales o íntimos; en el día a día uso más la mesa auxiliar de la cocina',
+        profiles: ['Sensorial', 'Visionario Sofisticado'],
+        reveals: 'Comedor ritual, día a día en barra o auxiliar',
+        essentialElement:
+          'Espacio más contenido, ambiente íntimo, apoyo en barra o isla para el día a día',
       },
       {
         id: 'B',
-        text: 'Compartir, comer rico y seguir con el día sin complicaciones.',
-        profiles: ['Práctico Funcional'],
-        reveals: 'Uso cotidiano, sin excesos',
-        essentialElement: 'comedor integrado, soluciones compactas, cercanía total a cocina, posibilidad de integrarse a sala.'
+        text: 'Lo uso siempre, en todas las comidas; es el centro donde nos reunimos y nos conectamos como familia',
+        profiles: ['Social', 'Sensorial'],
+        reveals: 'La mesa como corazón del hogar',
+        essentialElement: 'Comedor full integrado, amplitud, conexión con cocina y/o sala',
       },
       {
         id: 'C',
-        text: 'Que todo fluya sin formalidades: picar algo, moverte, sentarte donde quieras.',
-        profiles: ['Sensorial', 'Visionario Sofisticado'],
-        reveals: 'minimalismo, optimización',
-        essentialElement: 'Barra o isla como punto principal, espacio para mesa auxiliar o expandible, integración total con cocina y sala'
-      }
-    ]
+        text: 'Lo usamos solo para cenar y ya; un espacio práctico, sin mucho protagonismo',
+        profiles: ['Práctico Funcional'],
+        reveals: 'Uso acotado y eficiente',
+        essentialElement: 'Comedor eficiente, sin protagonismo, optimización del espacio',
+      },
+    ],
   },
   {
     id: 'dormitorio',
-    title: 'DORMITORIO + AISLAMIENTO ACÚSTICO',
-    question: 'Cuando cierras la puerta de tu cuarto al final del día, lo que más necesitas es…',
+    title: 'DORMITORIO',
+    question: 'En tu día a día, ¿cómo te gusta que funcione tu cuarto dentro de la casa?',
     options: [
       {
         id: 'A',
-        text: 'Que el mundo se apague y solo quede silencio, calma y oscuridad.',
+        text: 'Como un espacio completamente privado, silencioso y aislado, donde no entra nada del resto de la casa',
         profiles: ['Sensorial'],
-        reveals: 'valora la calma',
-        essentialElement: 'aislamiento acústico, ubicación más aislada del área social, materiales suaves.'
+        reveals: 'Máximo refugio y aislamiento',
+        essentialElement:
+          'Aislamiento acústico, ubicación apartada, sin pantallas ni distracciones, control total de luz',
       },
       {
         id: 'B',
-        text: 'Despertar con luz entrando y sentir que el día empieza contigo.',
-        profiles: ['Práctico Funcional'],
-        reveals: 'deseo de recibir energía y orden',
-        essentialElement: 'ventanas amplias con luz natural, espacio para estirarse, meditar o hacer ejercicio ligero'
+        text: 'Como un espacio privado, pero con lugar para ti: un escritorio, un rincón de lectura, meditación o lo que más disfrutes',
+        profiles: ['Práctico Funcional', 'Sensorial'],
+        reveals: 'Privacidad con rincón personal funcional',
+        essentialElement:
+          'Espacio suficiente para escritorio o rincón personal, buena luz natural, zonificación dentro del cuarto',
       },
       {
         id: 'C',
-        text: 'Tener tu propio universo: música, libros, pantalla y tiempo sin límites.',
-        profiles: ['Visionario Sofisticado'],
-        reveals: 'deseo de tener vida intensa',
-        essentialElement: 'espacio amplio o suficiente para escritorio o rincón creativo, previsión eléctrica y acústica para música/TV.'
-      }
-    ]
+        text: 'Como un espacio más abierto, donde también se puede compartir y disfrutar, incluso como el mejor lugar para ver películas',
+        profiles: ['Visionario Sofisticado', 'Social'],
+        reveals: 'Dormitorio multifunción y experiencia compartida',
+        essentialElement:
+          'Espacio amplio, posibilidad de integrar tecnología (home theatre), flexibilidad de uso',
+      },
+    ],
   },
   {
-    id: 'baño',
-    title: 'BAÑO SPA VS. FUNCIONAL VS. DISEÑO',
-    question: 'Por las mañanas, tu momento de baño ideal es ese en el que…',
+    id: 'bano',
+    title: 'BAÑO',
+    question: 'En tu rutina diaria, ¿cómo te gusta que sea tu momento de baño?',
     options: [
       {
         id: 'A',
-        text: 'El agua te ayuda a despertar lento, respirar profundo y empezar el día en calma.',
+        text: 'Como un espacio tipo spa, amplio y tranquilo, donde puedas bajar el ritmo y desconectarte',
         profiles: ['Sensorial'],
-        reveals: 'Le dan prioridad al auto cuidado',
-        essentialElement: 'Materiales naturales y texturas suaves, ducha amplia tipo lluvia o walk-in, espacio para colocar una banca o un mueble de descanso, sensación envolvente (tipo spa)'
+        reveals: 'Baño como ritual de desconexión',
+        essentialElement:
+          'Ducha amplia tipo lluvia, tina o jacuzzi o walk-in, materiales naturales, entrada de luz natural, sensación envolvente',
       },
       {
         id: 'B',
-        text: 'Todo fluye rápido, práctico y sin perder tiempo.',
+        text: 'Rápido y funcional, donde todo fluya sin perder tiempo y enfocado en lo práctico',
         profiles: ['Práctico Funcional'],
-        reveals: 'Practicidad y afan',
-        essentialElement: 'baño compacto, fácil mantenimiento, almacenamiento optimizado, materiales resistentes y fáciles de mantener.'
+        reveals: 'Practicidad y rapidez',
+        essentialElement:
+          'Baño compacto, fácil mantenimiento, almacenamiento optimizado, luz artificial funcional',
       },
       {
         id: 'C',
-        text: 'Te miras al espejo y sientes que estás en un espacio que te eleva.',
-        profiles: ['Visionario Sofisticado'],
-        reveals: 'Preferencia por lo estético y visualmente impactante',
-        essentialElement: 'materiales premium (gran formato, mármol, grifería destacada), lavamanos protagonista (doble si es posible), integración visual con el dormitorio (concepto suite)'
-      }
-    ]
+        text: 'Un punto medio: un baño cómodo y amplio pero sin necesidad de ser un spa ni tampoco algo totalmente básico',
+        profiles: ['Sensorial', 'Práctico Funcional'],
+        reveals: 'Confort sin exceso ni minimalismo extremo',
+        essentialElement:
+          'Baño amplio y cómodo, buena distribución, combinación de luz natural y artificial, sin sobre-diseño',
+      },
+    ],
   },
   {
     id: 'terraza',
-    title: 'TERRAZA SOCIAL VS. CONTEMPLATIVA',
+    title: 'TERRAZA SOCIAL',
     question: 'Si tuvieras una terraza o balcón, te imaginas ahí…',
     options: [
       {
         id: 'A',
-        text: 'Respirando profundo, con un café o una copa en la mano, sin que nadie te pida nada.',
+        text: 'Respirando profundo, con un café o una copa en la mano, sin que nadie te pida nada',
         profiles: ['Sensorial'],
-        reveals: 'El exterior es una extensión del bienestar interior. Busca pausa, silencio y contemplación.',
-        essentialElement: 'pivacidad visual (pantallas verdes, celosías), vista despejada (cielo, verde, horizonte), orientación tranquila (menos ruido)'
+        reveals: 'Terraza como pausa y contemplación',
+        essentialElement:
+          'Privacidad visual (pantallas verdes, celosías), vista despejada (cielo, verde, horizonte), orientación tranquila (menos ruido)',
       },
       {
         id: 'B',
-        text: 'Con amigos, risas que se escapan hacia la calle y música bajita de fondo.',
+        text: 'Con amigos, risas que se escapan hacia la calle y música bajita de fondo',
         profiles: ['Social'],
-        reveals: 'El exterior como escenario social, e disfrute ocurre en grupo, anfitrión activo, valora fluidez interior–exterior.',
-        essentialElement: 'Terraza amplia, conexión directa con sala/comedor, espacio para BBQ, mesa o barra. Tomas eléctricas para sonido.'
+        reveals: 'Terraza como extensión social del hogar',
+        essentialElement:
+          'Terraza amplia, conexión directa con sala/comedor, espacio para BBQ, mesa o barra. Tomas eléctricas para sonido',
       },
       {
         id: 'C',
-        text: 'Viendo crecer tus plantas, dejando que entre el sol y el aire mientras la vida sigue su curso.',
+        text: 'Viendo crecer tus plantas, dejando que entre el sol y el aire mientras la vida sigue su curso',
         profiles: ['Práctico Funcional', 'Sensorial'],
-        reveals: 'uso cotidiano, sin rituales excesivos.',
-        essentialElement: 'Superficies y piso resistente y fácil de mantener, espacio flexible, buen drenaje, buena exposición solar, area para jardineras o huerta. Espacio para mascotas.'
-      }
-    ]
+        reveals: 'Uso cotidiano, naturaleza y mantenimiento razonable',
+        essentialElement:
+          'Superficies y piso resistente y fácil de mantener, espacio flexible, buen drenaje, buena exposición solar, área para jardineras o huerta. Espacio para mascotas',
+      },
+    ],
   },
   {
     id: 'cuarto_extra',
-    title: 'CUARTO EXTRA (CREATIVO, WELLNESS O ESTUDIO)',
-    question: 'Si tu casa tuviera un espacio solo para ti, sería ese lugar donde…',
+    title: 'CUARTO EXTRA',
+    question: 'Si tu casa tuviera un espacio adicional, ¿cómo lo usarías en tu día a día?',
     options: [
       {
         id: 'A',
-        text: 'Puedes subir el volumen, crear, pintar, tocar, ver cine y perderte en lo que te apasiona.',
-        profiles: ['Visionario Sofisticado'],
-        reveals: 'Necesidad de expresión y experiencia. El hogar como laboratorio creativo. Interés cultural / artístico.',
-        essentialElement: 'aislamiento acústico, control de luz, conectividad tecnológica. Superficies amplias'
+        text: 'Lo usaría como bodega: siempre hay cosas que no sabes dónde guardar y prefiero tener un espacio dedicado para eso',
+        profiles: ['Práctico Funcional'],
+        reveals: 'Prioridad al almacenamiento ordenado',
+        essentialElement:
+          'Almacenamiento eficiente, muebles modulares, buena organización, fácil acceso',
       },
       {
         id: 'B',
-        text: 'Respiras profundo, estiras el cuerpo y vuelves a tu centro.',
-        profiles: ['Sensorial'],
-        reveals: 'autocuidado consciente. El espacio como refugio interno, espiritualidad o bienestar, necesidad de silencio.',
-        essentialElement: 'espacio neutro, materiales naturales, luz natural suave, piso cómodo (madera o similar)'
+        text: 'Lo usaría para mí: un lugar para mis hobbies o los de mis hijos, pintar, hacer ejercicio o un cuarto de juegos',
+        profiles: ['Visionario Sofisticado', 'Social'],
+        reveals: 'Espacio para creatividad, juego o movimiento',
+        essentialElement:
+          'Espacio flexible, buena luz (idealmente natural), superficies amplias, posibilidad de adaptarse a diferentes actividades',
       },
       {
         id: 'C',
-        text: 'Te concentras, piensas en grande y le das forma a tus ideas y proyectos.',
-        profiles: ['Práctico Funcional'],
-        reveals: 'Productividad y foco. El hogar como soporte de la vida profesional, Separación trabajo–descanso',
-        essentialElement: 'conectividad, aislamiento visual y acústico, almacenamiento funcional, posibilidad de cerrarse del resto de la casa'
-      }
-    ]
+        text: 'Lo usaría como oficina: hoy es clave tener un espacio de trabajo separado del cuarto y de las zonas sociales',
+        profiles: ['Práctico Funcional', 'Visionario Sofisticado'],
+        reveals: 'Trabajo en casa con fronteras claras',
+        essentialElement:
+          'Aislamiento acústico, conectividad, ergonomía, posibilidad de cerrarse del resto de la casa',
+      },
+    ],
   },
   {
-    id: 'servicio',
-    title: 'RELACIÓN CON AREA SERVICIO: VISIBILIDAD Y UBICACIÓN',
-    question: 'Cuando piensas en las tareas de lavado ya aseo de la casa, lo ideal para ti sería que…',
+    id: 'lavanderia',
+    title: 'ÁREA DE LAVANDERÍA',
+    question: 'En tu casa, ¿cómo prefieres que se integre el área de lavandería con los demás espacios?',
     options: [
       {
         id: 'A',
-        text: 'Simplemente no se vean ni se escuchen, que todo funcione sin interrumpir tu calma.',
-        profiles: ['Práctico Funcional', 'Visionario Sofisticado'],
-        reveals: 'control visual, estética limpia, mentalidad premium.',
-        essentialElement: 'Lavado oculto, puertas corredizas o panelables, aislamiento acústico, almacenamiento empotrado, que no interfiera con áreas sociales'
+        text: 'Integrada donde haga parte natural del día a día',
+        profiles: ['Social', 'Sensorial'],
+        reveals: 'Lavandería visible y fluida en la rutina',
+        essentialElement:
+          'Integración visual, buena luz natural, ventilación, materiales resistentes pero estéticos',
       },
       {
         id: 'B',
-        text: 'Sean rápidas, ordenadas y sin complicaciones.',
-        profiles: ['Práctico Funcional'],
-        reveals: 'Prioridad absoluta en el uso real, rutinas claras, bajo interés estético',
-        essentialElement: 'Distribución compacta y bien pensada, superficie de apoyo, almacenamiento funcional, fácil acceso desde cocina o zona privada'
+        text: 'Cerrada, que no se vea, con buen espacio de almacenamiento y todo oculto',
+        profiles: ['Práctico Funcional', 'Visionario Sofisticado'],
+        reveals: 'Lavandería oculta y orden visual',
+        essentialElement:
+          'Espacio independiente, puertas (corredizas o panelables), buen almacenamiento, aislamiento acústico',
       },
       {
         id: 'C',
-        text: 'Hagan parte natural del día a día, sin drama ni formalidades.',
-        profiles: ['Social', 'Sensorial'],
-        reveals: 'naturalidad, vida fluida, cero rigidez doméstica.',
-        essentialElement: 'integración visual limpia, posible conexión con balcón o terraza, materiales resistentes pero estéticos. Buena entrada de luz y aire'
-      }
-    ]
+        text: 'Semi-integrada, con alguna separación, pero sin problema de que se vea',
+        profiles: ['Práctico Funcional', 'Social'],
+        reveals: 'Equilibrio entre integración y separación',
+        essentialElement:
+          'Separaciones sutiles (vidrio, celosías, paneles), conexión con cocina o zona privada, ventilación e iluminación adecuadas',
+      },
+    ],
   },
   {
     id: 'almacenamiento',
@@ -261,79 +345,84 @@ export const QUESTIONS: Question[] = [
       {
         id: 'A',
         text: 'Las dejo visibles porque me gusta tenerlas presentes y que hagan parte del espacio',
-        profiles: ['Visionario Sofisticado'], // Expresivo + Emocional mapped to Visionario
-        reveals: 'Apego a los objetos, identidad a través del espacio, necesidad de narrar quién soy',
-        essentialElement: 'Estanterías abiertas, vitrinas, superficies visibles, objetos como parte activa del diseño'
+        profiles: ['Visionario Sofisticado'],
+        reveals: 'Objetos como parte del relato del hogar',
+        essentialElement:
+          'Estanterías abiertas, vitrinas, superficies visibles, objetos como parte activa del diseño',
       },
       {
         id: 'B',
         text: 'Busco guardarlas completamente para mantener todo limpio y despejado',
         profiles: ['Práctico Funcional'],
-        reveals: 'Necesidad de orden, control visual, baja tolerancia al ruido visual',
-        essentialElement: 'Almacenamiento cerrado, soluciones empotradas, modularidad eficiente, cero distracción'
+        reveals: 'Orden visual y superficies libres',
+        essentialElement:
+          'Almacenamiento cerrado, soluciones empotradas, modularidad eficiente, cero distracción',
       },
       {
         id: 'C',
         text: 'Depende: dejo algunas a la vista y otras las guardo según su uso o valor',
         profiles: ['Sensorial'],
-        reveals: 'Capacidad de selección, criterio estético sin sacrificar funcionalidad',
-        essentialElement: 'Mix de almacenamiento abierto y cerrado, jerarquía visual, objetos con intención'
-      }
-    ]
+        reveals: 'Criterio mixto entre exhibición y resguardo',
+        essentialElement: 'Mix de almacenamiento abierto y cerrado, jerarquía visual, objetos con intención',
+      },
+    ],
   },
   {
     id: 'movilidad',
-    title: 'MOVILIDAD / TRANSPORTE',
+    title: 'MOVILIDAD',
     question: 'Pensando en tu día a día, ¿qué tan central es el carro en tu forma de moverte?',
     options: [
       {
         id: 'A',
-        text: 'Es esencial: lo uso casi siempre y condiciona mis decisiones (parqueo, accesos, etc.)',
+        text: 'Es esencial: lo uso siempre y condiciona mis decisiones (parqueo, accesos, etc.)',
         profiles: ['Visionario Sofisticado'],
-        reveals: 'Dependencia del vehículo, optimización del tiempo, necesidad de control en desplazamientos',
-        essentialElement: 'Parqueaderos amplios, accesos directos, facilidad de entrada/salida, seguridad vehicular'
+        reveals: 'Vehículo como eje de ubicación y accesos',
+        essentialElement:
+          'Parqueaderos amplios, accesos directos, facilidad de entrada/salida, seguridad vehicular',
       },
       {
         id: 'B',
-        text: 'Lo uso ocasionalmente, pero no define cómo me muevo',
+        text: 'Lo uso ocasionalmente, solo los fines de semana',
         profiles: ['Práctico Funcional'],
-        reveals: 'Uso híbrido, decisiones según contexto, menor rigidez en hábitos',
-        essentialElement: 'Soluciones mixtas: parqueadero funcional pero no protagonista, buena conexión a vías y transporte'
+        reveals: 'Uso mixto del carro según contexto',
+        essentialElement:
+          'Soluciones mixtas: parqueadero funcional pero no protagonista, buena conexión a vías y transporte',
       },
       {
         id: 'C',
         text: 'No es prioritario: prefiero caminar, transporte público, bici u otras opciones',
         profiles: ['Sensorial'],
-        reveals: 'Preferencia por caminar, bici o transporte público, valoración del entorno inmediato',
-        essentialElement: 'Ubicación estratégica, walkability, acceso a comercio/servicios, espacios para bici'
-      }
-    ]
-  }
+        reveals: 'Movilidad activa y entorno caminable',
+        essentialElement:
+          'Ubicación estratégica, walkability, acceso a comercio/servicios, espacios para bici',
+      },
+    ],
+  },
 ];
 
 export const PROFILE_DEFINITIONS: Record<string, any> = {
-  'Social': {
+  Social: {
     title: 'El Social',
     description: 'Vive el apartamento como un escenario para compartir.',
     identity: 'Piensa en visitas, reuniones y familia. Valora la fluidez más que el objeto.',
-    vibe: 'Espacios integrados, cómodos y funcionales.'
+    vibe: 'Espacios integrados, cómodos y funcionales.',
   },
-  'Sensorial': {
+  Sensorial: {
     title: 'El Sensorial',
     description: 'Conecta con sensaciones, calma y bienestar.',
     identity: 'Busca refugio, tranquilidad, equilibrio. Ama el verde, el aire y el silencio.',
-    vibe: 'Luz, texturas, materiales naturales.'
+    vibe: 'Luz, texturas, materiales naturales.',
   },
   'Práctico Funcional': {
     title: 'El Práctico Funcional',
     description: 'Elegancia silenciosa, orden, proporción, decisiones bien pensadas.',
     identity: 'Prefiere calidad sobre exceso. Busca espacios atemporales.',
-    vibe: 'Valora el “lujo que no grita”.'
+    vibe: 'Valora el “lujo que no grita”.',
   },
   'Visionario Sofisticado': {
     title: 'El Visionario Sofisticado',
     description: 'Innovador, curioso, le gusta lo diferente y lo personalizado.',
     identity: 'Abierto a cambios estructurales. Interesado en tecnología, diseño y piezas únicas.',
-    vibe: 'Quiere que su apartamento diga algo de él.'
-  }
+    vibe: 'Quiere que su apartamento diga algo de él.',
+  },
 };
