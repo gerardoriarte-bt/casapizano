@@ -1,8 +1,11 @@
-import type { ProfileType, SurveyState } from "../src/types";
-import {
-  buildManifestPrompt,
-  extractClientReportFromMessage,
-} from "../src/lib/clientManifest";
+/**
+ * Sin imports desde `src/`: en Vite + Vercel el bundle de `/api` a veces no resuelve
+ * `../src/**` y la función revienta al cargar (500 con HTML, no JSON).
+ *
+ * El cliente envía `manifestPrompt` ya armado con `buildManifestPrompt`.
+ */
+
+const MAX_PROMPT_CHARS = 100_000;
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +17,24 @@ type OpenAIChatCompletionResponse = {
   choices?: Array<{ message?: { content?: string | null } }>;
   error?: { message?: string };
 };
+
+function extractClientReportFromMessage(
+  content: string | null | undefined
+): { clientReport: string } {
+  const text = content || "{}";
+  try {
+    const parsed = JSON.parse(text) as Partial<{ clientReport: string }>;
+    const clientReport =
+      typeof parsed.clientReport === "string"
+        ? parsed.clientReport
+        : "No se pudo generar el manifiesto.";
+    return { clientReport };
+  } catch {
+    return {
+      clientReport: "No se pudo interpretar la respuesta del modelo.",
+    };
+  }
+}
 
 async function callOpenAIChat(
   apiKey: string,
@@ -54,10 +75,6 @@ async function callOpenAIChat(
   return { content };
 }
 
-/**
- * Sin SDK `openai` en el bundle serverless (evita fallos de empaquetado en Vercel).
- * Firma Web estándar recomendada por Vercel para Node.
- */
 export default {
   async fetch(request: Request): Promise<Response> {
     try {
@@ -97,23 +114,24 @@ export default {
         );
       }
 
-      const { surveyState, dominantProfile } = (body || {}) as {
-        surveyState?: SurveyState;
-        dominantProfile?: ProfileType;
-      };
+      const manifestPrompt =
+        typeof (body as { manifestPrompt?: unknown })?.manifestPrompt ===
+        "string"
+          ? (body as { manifestPrompt: string }).manifestPrompt.trim()
+          : "";
 
-      if (!surveyState || !dominantProfile) {
+      if (!manifestPrompt || manifestPrompt.length > MAX_PROMPT_CHARS) {
         return Response.json(
           {
-            clientReport: "Solicitud inválida: faltan datos de la encuesta.",
+            clientReport:
+              "Solicitud inválida: falta manifestPrompt o excede el tamaño permitido.",
             error: "invalid_body",
           },
           { status: 400, headers: corsHeaders }
         );
       }
 
-      const prompt = buildManifestPrompt(surveyState, dominantProfile);
-      const { content, httpError } = await callOpenAIChat(key, prompt);
+      const { content, httpError } = await callOpenAIChat(key, manifestPrompt);
 
       if (httpError) {
         console.error("generate-manifest OpenAI:", httpError);

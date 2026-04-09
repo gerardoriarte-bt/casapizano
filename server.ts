@@ -61,18 +61,23 @@ async function startServer() {
       });
     }
     try {
-      const { surveyState, dominantProfile } = req.body as {
+      const body = req.body as {
+        manifestPrompt?: string;
         surveyState?: SurveyState;
         dominantProfile?: ProfileType;
       };
-      if (!surveyState || !dominantProfile) {
+      let prompt: string;
+      if (typeof body.manifestPrompt === "string" && body.manifestPrompt.trim()) {
+        prompt = body.manifestPrompt.trim();
+      } else if (body.surveyState && body.dominantProfile) {
+        prompt = buildManifestPrompt(body.surveyState, body.dominantProfile);
+      } else {
         return res.status(400).json({
           clientReport: "Solicitud inválida: faltan datos de la encuesta.",
           error: "invalid_body",
         });
       }
       const openai = new OpenAI({ apiKey: key });
-      const prompt = buildManifestPrompt(surveyState, dominantProfile);
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [{ role: "user", content: prompt }],

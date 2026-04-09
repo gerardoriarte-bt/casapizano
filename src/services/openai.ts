@@ -1,4 +1,5 @@
 import type { SurveyState, ProfileType } from "../types";
+import { buildManifestPrompt } from "../lib/clientManifest";
 import { resolveApiUrl } from "../lib/apiBase";
 
 export type ClientReportResult = { clientReport: string };
@@ -11,10 +12,11 @@ export async function generateClientReport(
   dominantProfile: ProfileType
 ): Promise<ClientReportResult> {
   try {
+    const manifestPrompt = buildManifestPrompt(state, dominantProfile);
     const r = await fetch(resolveApiUrl("/api/generate-manifest"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ surveyState: state, dominantProfile }),
+      body: JSON.stringify({ manifestPrompt }),
     });
 
     const raw = await r.text();
