@@ -1,32 +1,61 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
-/**
- * Reenvía el payload al webhook de Google Sheets (misma lógica que server.ts en local).
- */
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "method_not_allowed" });
-  }
-
-  const url = process.env.GOOGLE_SHEETS_WEBHOOK_URL?.trim();
-  if (!url) {
-    return res.status(200).json({ ok: true, skipped: true, reason: "webhook_not_configured" });
-  }
-
-  try {
-    const r = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body ?? {}),
-    });
-    const text = await r.text();
-    if (!r.ok) {
-      console.error("GOOGLE_SHEETS_WEBHOOK_URL error:", r.status, text);
-      return res.status(502).json({ ok: false, error: "webhook_failed" });
+export default {
+  async fetch(request: Request): Promise<Response> {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
     }
-    return res.status(200).json({ ok: true, sent: true });
-  } catch (e) {
-    console.error("survey-export:", e);
-    return res.status(500).json({ ok: false, error: "internal" });
-  }
-}
+
+    if (request.method !== "POST") {
+      return Response.json(
+        { ok: false, error: "method_not_allowed" },
+        { status: 405, headers: corsHeaders }
+      );
+    }
+
+    const url = process.env.GOOGLE_SHEETS_WEBHOOK_URL?.trim();
+    if (!url) {
+      return Response.json(
+        { ok: true, skipped: true, reason: "webhook_not_configured" },
+        { status: 200, headers: corsHeaders }
+      );
+    }
+
+    let payload: unknown = {};
+    try {
+      payload = await request.json();
+    } catch {
+      payload = {};
+    }
+
+    try {
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const text = await r.text();
+      if (!r.ok) {
+        console.error("GOOGLE_SHEETS_WEBHOOK_URL error:", r.status, text);
+        return Response.json(
+          { ok: false, error: "webhook_failed" },
+          { status: 502, headers: corsHeaders }
+        );
+      }
+      return Response.json(
+        { ok: true, sent: true },
+        { status: 200, headers: corsHeaders }
+      );
+    } catch (e) {
+      console.error("survey-export:", e);
+      return Response.json(
+        { ok: false, error: "internal" },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+  },
+};

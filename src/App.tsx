@@ -16,6 +16,7 @@ import {
   APARTMENT_SIZE_BAND_ORDER,
 } from './types';
 import { generateClientReport } from './services/openai';
+import { resolveApiUrl } from './lib/apiBase';
 
 /** Colores para gráficos de perfiles (donut + barras). */
 const PROFILE_CHART: Record<
@@ -233,7 +234,7 @@ const App: React.FC = () => {
       }
 
       try {
-        const exportRes = await fetch('/api/survey-export', {
+        const exportRes = await fetch(resolveApiUrl('/api/survey-export'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(sheetPayload),
