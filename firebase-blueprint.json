@@ -8,7 +8,7 @@
         "userId": { "type": "string", "description": "The UID of the user who took the survey." },
         "userName": { "type": "string", "description": "The name provided by the user." },
         "alreadyPurchased": { "type": "boolean", "description": "Whether the client has already purchased the apartment." },
-        "apartmentSizeBand": { "type": "string", "description": "Approximate size band when purchased: lt_100, 100_200, gt_200, gt_300." },
+        "apartmentSizeBand": { "type": "string", "description": "Size band of interest when not yet purchased: lt_100, 100_200, gt_200, gt_300." },
         "inhabitants": { "type": "number", "description": "Number of people living in the apartment." },
         "ages": { "type": "string", "description": "Ages of the inhabitants." },
         "pets": { "type": "string", "description": "Type and quantity of pets." },

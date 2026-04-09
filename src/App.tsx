@@ -90,8 +90,10 @@ const App: React.FC = () => {
       setBasicFormError('Indica si ya compraste el apartamento.');
       return;
     }
-    if (state.alreadyPurchased === true && state.apartmentSizeBand === null) {
-      setBasicFormError('Selecciona la superficie aproximada de tu apartamento.');
+    if (state.alreadyPurchased === false && state.apartmentSizeBand === null) {
+      setBasicFormError(
+        'Indica qué tamaño aproximado en m² te interesa para el apartamento.'
+      );
       return;
     }
     setBasicFormError(null);
@@ -194,11 +196,12 @@ const App: React.FC = () => {
         submittedAt: new Date().toISOString(),
         userName: finalState.userName,
         alreadyPurchased: finalState.alreadyPurchased === true,
-        apartmentSizeBand: finalState.alreadyPurchased
-          ? finalState.apartmentSizeBand
-          : null,
+        apartmentSizeBand:
+          finalState.alreadyPurchased === false
+            ? finalState.apartmentSizeBand
+            : null,
         apartmentSizeLabel:
-          finalState.alreadyPurchased && finalState.apartmentSizeBand
+          finalState.alreadyPurchased === false && finalState.apartmentSizeBand
             ? APARTMENT_SIZE_LABELS[finalState.apartmentSizeBand]
             : null,
         inhabitants: finalState.inhabitants,
@@ -216,9 +219,10 @@ const App: React.FC = () => {
         await addDoc(collection(db, 'surveyResults'), {
           userName: finalState.userName,
           alreadyPurchased: finalState.alreadyPurchased === true,
-          apartmentSizeBand: finalState.alreadyPurchased
-            ? finalState.apartmentSizeBand
-            : null,
+          apartmentSizeBand:
+            finalState.alreadyPurchased === false
+              ? finalState.apartmentSizeBand
+              : null,
           inhabitants: finalState.inhabitants,
           ages: finalState.ages,
           pets: finalState.pets,
@@ -331,7 +335,7 @@ const App: React.FC = () => {
               ¿Ya compraste el apartamento?
             </h3>
             <p className="text-sm md:text-base text-zinc-500 font-light leading-relaxed max-w-2xl">
-              Si ya es tuyo, indica también el tamaño aproximado en metros cuadrados para afinar la propuesta.
+              Si aún estás buscando, indica qué tamaño aproximado en m² te interesa. Si ya es tuyo, no hace falta ese dato aquí.
             </p>
           </div>
           <div
@@ -346,6 +350,7 @@ const App: React.FC = () => {
                 setState((prev) => ({
                   ...prev,
                   alreadyPurchased: true,
+                  apartmentSizeBand: null,
                 }));
               }}
               className={`flex-1 text-left px-5 py-4 border transition-all duration-500 rounded-sm ${
@@ -378,10 +383,10 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          {state.alreadyPurchased === true ? (
+          {state.alreadyPurchased === false ? (
             <div className="space-y-3 pt-2 border-t border-zinc-800/60">
               <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">
-                Superficie aproximada
+                Tamaño que te interesa (aprox.)
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {APARTMENT_SIZE_BAND_ORDER.map((band) => (
@@ -793,10 +798,10 @@ const App: React.FC = () => {
                         : state.alreadyPurchased === false
                           ? 'Aún no compra'
                           : '—'}
-                      {state.alreadyPurchased === true && state.apartmentSizeBand ? (
+                      {state.alreadyPurchased === false && state.apartmentSizeBand ? (
                         <span className="text-zinc-400">
                           {' '}
-                          · {APARTMENT_SIZE_LABELS[state.apartmentSizeBand]}
+                          · Interés ~ {APARTMENT_SIZE_LABELS[state.apartmentSizeBand]}
                         </span>
                       ) : null}
                     </li>

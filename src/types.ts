@@ -1,6 +1,6 @@
 export type ProfileType = 'Social' | 'Sensorial' | 'Práctico Funcional' | 'Visionario Sofisticado';
 
-/** Superficie aproximada del apartamento (solo si ya compró). */
+/** Franja de m² de interés (si aún no ha comprado) o referencia de tamaño. */
 export type ApartmentSizeBand = 'lt_100' | '100_200' | 'gt_200' | 'gt_300';
 
 export const APARTMENT_SIZE_LABELS: Record<ApartmentSizeBand, string> = {
@@ -36,7 +36,7 @@ export interface SurveyState {
   userName: string;
   /** null = aún no eligió en el formulario */
   alreadyPurchased: boolean | null;
-  /** Solo aplica si alreadyPurchased === true */
+  /** Solo aplica si alreadyPurchased === false (tamaño que le interesa). */
   apartmentSizeBand: ApartmentSizeBand | null;
   inhabitants: number;
   ages: string;

@@ -28,10 +28,10 @@ export function buildManifestPrompt(
     state.alreadyPurchased === null
       ? "Compra: no indicada en el formulario."
       : state.alreadyPurchased === false
-        ? "Compra: aún no ha comprado el apartamento (prospecto / en búsqueda)."
-        : state.apartmentSizeBand
-          ? `Compra: ya compró el apartamento. Superficie aproximada: ${APARTMENT_SIZE_LABELS[state.apartmentSizeBand]}.`
-          : "Compra: ya compró; superficie no especificada.";
+        ? state.apartmentSizeBand
+          ? `Compra: aún no ha comprado (prospecto / en búsqueda). Interés aproximado en superficie: ${APARTMENT_SIZE_LABELS[state.apartmentSizeBand]}.`
+          : "Compra: aún no ha comprado el apartamento (prospecto / en búsqueda)."
+        : "Compra: ya compró el apartamento.";
 
   return `
       Eres escritor de concepto y arquitecto de experiencia para Casa Pizano (Bogotá). Tienes la encuesta completa de un cliente.
